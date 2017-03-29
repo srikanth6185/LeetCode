@@ -351,12 +351,12 @@ void test_MedianOfSortedArrays()
     return;
 }
 
-
 #define REV(s,i,n) (s[n - 1 - i])
 char* longestPalindrome(char* s)
 {
-    int n, i, j, max = 0;
-    char *scratch, *res = NULL;
+    int n, i, j, max = 0, k,nmax, idx, r, resi;
+    short *scratch;
+    char *res;
 
     if (!s) {
         return NULL;
@@ -365,53 +365,64 @@ char* longestPalindrome(char* s)
 
     n = strlen(s);
 
-    scratch = (char*)calloc(n*n, sizeof(char));
+    scratch = (short*)calloc(n*n, sizeof(short));
     if (!scratch) {
         return NULL;
     }
 
     for(i = 0; i < n; i++) {
         for(j = 0; j < n; j++) {
-            if (s[i] == REV(s, j, n)) {
+            r = n - j - 1;
+            if (s[i] == s[r]) {
+                k = i*n +j;
                 if ((i == 0) || (j == 0)) {
-                    scratch[i*n + j] = 1;
+                    scratch[k] = 1;
                 } else {
-                    scratch[i*n + j] = scratch[(i-1)*n + (j-1)] + 1;
+                    scratch[k] = scratch[(i-1)*n + (j-1)] + 1;
                 }
-
-                if (scratch[i*n + j] > max) {
-                	int idx;
-                	max = scratch[i*n + j];
-                    if (res) {
-                        free(res);
+                nmax = scratch[k];
+                
+                if ((nmax > max) && (i == (n - 1 - (j - scratch[i*n + j] + 1)))) {
+                {
+                        max = nmax;
+                        resi = i;
                     }
-                    res = (char*)malloc(sizeof(char) * (max+1));
-                    for(idx = 0; idx < max; idx++) {
-                    	res[idx] = s[i - max + idx + 1];
-                    }
-                    res[idx] = '\0';
-                    printf("res: %s\n", res);
                 }
-            } else {
-            	scratch[i*n + j] = 0;
             }
         }
     }
+/*
+    for(i = 0; i < n; i++) {
+        for(j = 0 ; j < n; j++ ) {
+            printf("%d,", scratch[i*n + j]);
+        }
+        printf("\n");
+    }
+*/
+    free(scratch);
+    
+    res = (char*)malloc(sizeof(char) * (max+1));
+    for(idx = 0; idx < max; idx++) {
+        res[idx] = s[resi - max + idx + 1];
+    }
 
+    res[idx] = '\0';
     return res;
 }
 
 void test_longestPalindrome(void)
 {
-	char s[13] = "abacdfgdcaba";
-	char *res;
+    //char s[13] = /*"a";*/"abacdfgdcaba";
+    char s[1024] = "aaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeeeffffffffffgggggggggghhhhhhhhhhiiiiiiiiiijjjjjjjjjjkkkkkkkkkkllllllllllmmmmmmmmmmnnnnnnnnnnooooooooooppppppppppqqqqqqqqqqrrrrrrrrrrssssssssssttttttttttuuuuuuuuuuvvvvvvvvvvwwwwwwwwwwxxxxxxxxxxyyyyyyyyyyzzzzzzzzzzyyyyyyyyyyxxxxxxxxxxwwwwwwwwwwvvvvvvvvvvuuuuuuuuuuttttttttttssssssssssrrrrrrrrrrqqqqqqqqqqppppppppppoooooooooonnnnnnnnnnmmmmmmmmmmllllllllllkkkkkkkkkkjjjjjjjjjjiiiiiiiiiihhhhhhhhhhggggggggggffffffffffeeeeeeeeeeddddddddddccccccccccbbbbbbbbbbaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeeeffffffffffgggggggggghhhhhhhhhhiiiiiiiiiijjjjjjjjjjkkkkkkkkkkllllllllllmmmmmmmmmmnnnnnnnnnnooooooooooppppppppppqqqqqqqqqqrrrrrrrrrrssssssssssttttttttttuuuuuuuuuuvvvvvvvvvvwwwwwwwwwwxxxxxxxxxxyyyyyyyyyyzzzzzzzzzzyyyyyyyyyyxxxxxxxxxxwwwwwwwwwwvvvvvvvvvvuuuuuuuuuuttttttttttssssssssssrrrrrrrrrrqqqqqqqqqqppppppppppoooooooooonnnnnnnnnnmmmmmmmmmmllllllllllkkkkkkkkkkjjjjjjjjjjiiiiiiiiiihhhhhhhhhhggggggggggffffffffffeeeeeeeeeeddddddddddccccccccccbbbbbbbbbbaaaa";
+//    char s[20] = "aa1111bbccbb1111aa";
+    char *res;
 
-	res = longestPalindrome(s);
-	if (res) {
-		printf("Result: %s\n", res);
-		free(res);
-	}
-	return;
+    res = longestPalindrome(s);
+    if (res) {
+        printf("Result: %s\n", res);
+        free(res);
+    }
+    return;
 }
 
 
@@ -420,7 +431,7 @@ int main(void)
     //test_twoSum();
     //test_LongestSubstring();
     //test_MedianOfSortedArrays();
-	test_longestPalindrome();
+    test_longestPalindrome();
     printf("Done\n");
     return 0;
 }
