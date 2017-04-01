@@ -8,6 +8,7 @@
 #include<stdlib.h>
 #include<string.h>
 #include<math.h>
+#include<limits.h>
 
 typedef struct ns {
     int val;
@@ -351,12 +352,13 @@ void test_MedianOfSortedArrays()
     return;
 }
 
+
 #define REV(s,i,n) (s[n - 1 - i])
 char* longestPalindrome(char* s)
 {
-    int n, i, j, max = 0, k,nmax, idx, r, resi;
-    short *scratch;
-    char *res;
+    int n, i, j, max = 0;
+    int *scratch;
+    char *res = NULL;
 
     if (!s) {
         return NULL;
@@ -365,29 +367,38 @@ char* longestPalindrome(char* s)
 
     n = strlen(s);
 
-    scratch = (short*)calloc(n*n, sizeof(short));
+    scratch = (int*)calloc(n*n, sizeof(int));
     if (!scratch) {
         return NULL;
     }
 
     for(i = 0; i < n; i++) {
         for(j = 0; j < n; j++) {
-            r = n - j - 1;
-            if (s[i] == s[r]) {
-                k = i*n +j;
+            if (s[i] == REV(s, j, n)) {
                 if ((i == 0) || (j == 0)) {
-                    scratch[k] = 1;
+                    scratch[i*n + j] = 1;
                 } else {
-                    scratch[k] = scratch[(i-1)*n + (j-1)] + 1;
+                    scratch[i*n + j] = scratch[(i-1)*n + (j-1)] + 1;
                 }
-                nmax = scratch[k];
-                
-                if ((nmax > max) && (i == (n - 1 - (j - scratch[i*n + j] + 1)))) {
-                {
-                        max = nmax;
-                        resi = i;
+
+                if ((scratch[i*n + j] > max)) {
+                    int idx;
+                    if (((n - j - 1) == (i - scratch[i*n + j] + 1)) &&
+                         (i == (n - 1 - (j - scratch[i*n + j] + 1)))) {
+                        max = scratch[i*n + j];
+                        if (res) {
+                            free(res);
+                        }
+                        res = (char*)malloc(sizeof(char) * (max+1));
+                        for(idx = 0; idx < max; idx++) {
+                            res[idx] = s[i - max + idx + 1];
+                        }
+                        res[idx] = '\0';
+//                        printf("res: %s\n", res);
                     }
                 }
+            } else {
+                scratch[i*n + j] = 0;
             }
         }
     }
@@ -399,14 +410,6 @@ char* longestPalindrome(char* s)
         printf("\n");
     }
 */
-    free(scratch);
-    
-    res = (char*)malloc(sizeof(char) * (max+1));
-    for(idx = 0; idx < max; idx++) {
-        res[idx] = s[resi - max + idx + 1];
-    }
-
-    res[idx] = '\0';
     return res;
 }
 
@@ -424,14 +427,173 @@ void test_longestPalindrome(void)
     }
     return;
 }
+int reverse(int x)
+{
+    int res = 0;
+    while (x) {
+        if ((res != 0) && (INT_MAX/res < 10) && (INT_MAX/res > -10)) {
+            return 0;
+        }
+        res = res*10 + x%10;
+        x /= 10;
+    }
+    return res;
+}
 
+void test_reverse(void)
+{
+    int val = -123, res;
+
+    res = reverse(val);
+    printf("res: %d\n", res);
+    return;
+}
+
+int sample_atoi(const char *str) {
+    int sign = 1, base = 0, i = 0;
+    while (str[i] == ' ') { i++; }
+    if (str[i] == '-' || str[i] == '+') {
+        sign = 1 - 2 * (str[i++] == '-');
+    }
+    while (str[i] >= '0' && str[i] <= '9') {
+        if (base >  INT_MAX / 10 || (base == INT_MAX / 10 && str[i] - '0' > 7)) {
+            if (sign == 1) return INT_MAX;
+            else return INT_MIN;
+        }
+        base  = 10 * base + (str[i++] - '0');
+    }
+    return base * sign;
+}
+
+int myAtoi(char* str)
+{
+    int n, i = 0, minus = 0, plus = 0;
+    long int val = 0;
+
+    if (!str) {
+        return 0;
+    }
+
+    n = strlen(str);
+
+    if (!n) {
+        return 0;
+    }
+   
+    /*Reach first digit*/
+    for(i = 0; i < n; i++) {
+        if ((str[i] >= '0') && (str[i] <= '9')) {
+            break;
+        }
+        if ((str[i] == '-') && !minus && !plus) {
+            minus = 1;
+            continue;
+        }
+        if (str[i] == ' ' && !plus && !minus) {
+            continue;
+        }
+         
+        if ((str[i] == '+') && !plus && !minus) {
+            plus = 1;
+            continue;
+        }
+
+        return 0;
+    }
+
+    if (i == n) {
+        return 0;
+    }
+
+    printf("INT_MAX: %d\n", INT_MAX);
+    printf("INT_MIN: %d\n", INT_MIN);
+    for(; i < n; i++) {
+        if ((val >= INT_MAX) && !minus) {
+                val = INT_MAX;
+            return val;
+        }
+
+        if ((val >= ((long int)INT_MAX + 1)) && minus) {
+                val = INT_MIN;
+            return val;
+        }
+
+        if ((str[i] >= '0') && (str[i] <= '9')) {
+            val = val*10 + (str[i] - '0');
+        } else if ((str[i] != ' ') && (val == 0)){
+            return 0;
+        } else {
+            break;
+        }
+    }
+
+    if ((val >= INT_MAX) && !minus) {
+        val = INT_MAX;
+        return val;
+    }
+
+    if ((val >= ((long int)INT_MAX + 1)) && minus) {
+        val = INT_MIN;
+        return val;
+    }
+
+    return minus ? (-val) : val;
+}
+
+void test_atoi(void)
+{
+    char arr[64] = "   - 321";
+    int res;
+
+    res = myAtoi(arr);
+    printf("res: %d\n", res);
+    return;
+}
+typedef char bool;
+
+#define true 1
+#define false 0
+
+bool isPalindrome(int x) {
+    int y = 0;
+
+    if(x < 0 || ((x != 0) && (x % 10 == 0))) {
+        return false;
+    }
+
+    if ((x >= 0) && (x < 10)) {
+        return true;
+    }
+
+    while (x > y) {
+        y = (y * 10) + (x % 10);
+        x = x/10;
+    }
+
+    if ((x == y) || (x == y/10)) {
+        return true;
+    }
+
+    return false;
+}
+
+
+void test_intPalindrome(void) {
+    int x = 1001;
+
+    printf("isPalindrome(%d) = %s\n", x, isPalindrome(x) ? "TRUE": "FALSE");
+    return;
+}
 
 int main(void)
 {
     //test_twoSum();
     //test_LongestSubstring();
     //test_MedianOfSortedArrays();
-    test_longestPalindrome();
+    //test_longestPalindrome();
+    //test_reverse();
+    //test_atoi();
+    test_intPalindrome();
     printf("Done\n");
     return 0;
 }
