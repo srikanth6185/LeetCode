@@ -152,7 +152,7 @@ int* twoSum(int* nums, int numsSize, int target) {
         sorted_nums[i].idx = i;
     }
 
-#if 0
+#ifdef TEST
     for (i = 1; i < numsSize; i++) {
         for (j = 0; j < (numsSize - i); j++) {
             if (sorted_nums[j].val > sorted_nums[j+1].val) {
@@ -585,6 +585,179 @@ void test_intPalindrome(void) {
     return;
 }
 
+char* longestCommonPrefix(char** strs, int strsSize) {
+	int i, j, len, res_len = 0, curr_len;
+	char *res;
+
+	if (!strs || !(*strs) || (strsSize <= 0)) {
+        res = (char*)malloc(sizeof(char));
+		res[0] = '\0';
+		return res;
+	}
+
+	len = strlen(strs[0]);
+	if (len <= 0) {
+        res = (char*)malloc(sizeof(char));
+		res[0] = '\0';
+		return res;
+	}
+    res = (char*)malloc(sizeof(char) * (len+1));
+
+	for (i = 0; i < len; i++) {
+		for (j = 1; j < strsSize; j++) {
+			curr_len = strlen(strs[j]);
+			if ((curr_len == i) || (strs[0][i] != strs[j][i])) {
+				res[res_len] = '\0';
+				return res;
+			}
+		}
+		res[res_len++] = strs[0][i];
+	}
+    res[res_len] = '\0';
+	return res;
+}
+
+
+void test_LongestCommonPrefix(void)
+{
+	char **strings;
+	char *res;
+	int n = 4, i;
+
+	strings = (char**)malloc(sizeof(char*) * n);
+	for( i = 0; i < n; i++) {
+		strings[i] = (char*)malloc(sizeof(char) * 64);
+	}
+
+	strcpy(strings[0], "leet");
+	strcpy(strings[1], "lee");
+	strcpy(strings[2], "leed");
+	strcpy(strings[3], "leeke");
+	//strings[0][0] = '\0';
+	//strings[1][0] = '\0';
+	//strings[2][0] = '\0';
+	//strings[3][0] = '\0';
+
+	res = longestCommonPrefix(strings, 4);
+	if (res) {
+		printf("LongestCommonPrefix() = %s\n", res);
+		free(res);
+	}
+	return;
+}
+
+void quick_sort_array(int* nums, int l, int h)
+{
+    int i, j, pivot;
+    int temp;
+
+    if ((l >= h) || (l < 0) || (h < 0)) {
+        return;
+    }
+
+    pivot = h;
+    i = j = l;
+
+
+    while (j < pivot) {
+        if (nums[j] < nums[pivot]) {
+            temp = nums[j];
+            nums[j] = nums[i];
+            nums[i] = temp;
+            i++;
+        }
+        j++;
+    }
+
+    temp = nums[pivot];
+    nums[pivot] = nums[i];
+    nums[i] = temp;
+
+    quick_sort_array(nums, l, i -1);
+    quick_sort_array(nums, i + 1, h);
+
+    return;
+}
+/**
+ * Return an array of arrays of size *returnSize.
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+int** threeSum(int* nums, int numsSize, int* returnSize) {
+	int l, h, i;
+	int **res;
+
+	printf("Size:%d\n", numsSize);
+	*returnSize = 0;
+	if (!nums || (numsSize < 3)) {
+		return NULL;
+	}
+
+	res = (int**)malloc(sizeof(int*)*numsSize*numsSize);
+
+	quick_sort_array(nums,0,numsSize-1);
+	for(i = 0; i < numsSize; i++) {
+		printf("%d, ", nums[i]);
+	}
+	printf("\n");
+#if 1
+	for(i = 0; i < numsSize; i++) {
+		int sum = -nums[i];
+
+		if (i && (nums[i-1] == nums[i])) {
+			continue;
+		}
+		l = i + 1;
+		h = numsSize - 1;
+
+		while(l < h) {
+			if (l == i) {
+				l++;
+				continue;
+			}else if (h == i) {
+				h--;
+				continue;
+			}
+
+			if ((nums[l] + nums[h]) > sum) {
+				h--;
+			} else if((nums[l] + nums[h]) < sum) {
+				l++;
+			} else {
+				printf("res[%d] = {%d, %d, %d}\n", *returnSize, nums[i], nums[l], nums[h]);
+				res[*returnSize] = (int*)malloc(sizeof(int) * 3);
+				res[*returnSize][0] = nums[i];
+				res[*returnSize][1] = nums[l];
+				res[*returnSize][2] = nums[h];
+				while ((l < h) && (nums[l] == res[*returnSize][1])) l++;
+				while ((l < h) && (nums[h] == res[*returnSize][2])) h--;
+				*returnSize = *returnSize + 1;
+			}
+		}
+	}
+#endif
+	return res;
+}
+
+void test_3sum(void)
+{
+	//int arr[27] = {-7,-4,-6,6,4,-6,-9,-10,-7,5,3,-1,-5,8,-1,-2,-8,-1,5,-3,-5,4,2,-5,-4,4,7};//{-1, 0, 1, 2, -1, -4};//{1,2,3,4,5,-3};
+	int arr[3] = {-1, 0, 1};
+	int **res;
+	int n;
+
+	res = threeSum(arr, 3, &n);
+	if (res) {
+		if (n) {
+			int i;
+			for(i = 0; i < n; i++) {
+				printf("%d %d %d\n", res[i][0], res[i][1], res[i][2]);
+				free(res[i]);
+			}
+		}
+		free(res);
+	}
+}
+
 int main(void)
 {
     //test_twoSum();
@@ -593,7 +766,9 @@ int main(void)
     //test_longestPalindrome();
     //test_reverse();
     //test_atoi();
-    test_intPalindrome();
+    //test_intPalindrome();
+	//test_LongestCommonPrefix();
+	test_3sum();
     printf("Done\n");
     return 0;
 }
